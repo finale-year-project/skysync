@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name='iris_custom'>
+    <include>
+      <uri>model://iris</uri>
+    </include>
+
+    <link name="iris_custom::camera_link">
+  		<!-- Other link properties here -->
+  		
+  		<pose>0.1 0 0 0 0 0</pose> <!-- Set the initial pose of the camera link -->
+		  <inertial>
+				<mass>0.01</mass>
+				<inertia>
+					<ixx>0.0001</ixx>
+					<ixy>0</ixy>
+					<ixz>0</ixz>
+					<iyy>0.0001</iyy>
+					<iyz>0</iyz>
+					<izz>0.0001</izz>
+				</inertia>
+		  </inertial>
+		  <collision name="camera_collision">
+				<geometry>
+					<box>
+					<size>0.01 0.01 0.01</size> <!-- Set the collision geometry size -->
+					</box>
+				</geometry>
+				<surface>
+					<friction>
+					<ode>
+						<mu>100.0</mu> <!-- Set friction coefficient -->
+						<mu2>50.0</mu2>
+					</ode>
+					</friction>
+					<bounce/>
+					<contact>
+					<ode/>
+					</contact>
+				</surface>
+		  </collision>
+
+	  <sensor name="camera" type="camera">
+	    <camera name="camera">
+	      <horizontal_fov>1.3962634</horizontal_fov>
+	      <image>
+		<width>800</width>
+		<height>600</height>
+	      </image>
+	      <clip>
+		<near>0.1</near>
+		<far>100</far>
+	      </clip>
+	    </camera>
+	    <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+	      <alwaysOn>true</alwaysOn>
+	      <updateRate>0.1</updateRate>
+	      <cameraName>iris_camera</cameraName>
+	      <imageTopicName>image_raw</imageTopicName>
+	    </plugin>
+	  </sensor>
+	</link>
+
+
+  </model>
+</sdf>
