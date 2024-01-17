@@ -11,7 +11,7 @@
     </include>
     <include>
       <uri>model://aruco_visual_marker_4x4_50</uri>
-      <pose>1 1 0 0 0 0.0</pose>
+      <pose>6 6 0 0 0 0.0</pose>
     </include>
     <include>
       <uri>model://asphalt_plane</uri>
