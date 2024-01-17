@@ -9,7 +9,7 @@ import cv2.aruco as aruco
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
-
+#program to do static landing
 current_state = State()
 current_pose = PoseStamped()
 
