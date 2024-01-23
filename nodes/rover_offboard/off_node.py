@@ -1,8 +1,7 @@
 #! /usr/bin/env python3
 
 import rospy
-from geometry_msgs.msg import PoseStamped, TwistStamped
-from mavros_msgs.msg import State
+from mavros_msgs.msg import State, PositionTarget
 from mavros_msgs.srv import CommandBool, CommandBoolRequest, SetMode, SetModeRequest
 
 current_state = State()
@@ -16,7 +15,7 @@ if __name__ == "__main__":
 
     state_sub = rospy.Subscriber("mavros/state", State, callback=state_cb)
 
-    local_vel_pub = rospy.Publisher("mavros/setpoint_velocity/cmd_vel", TwistStamped, queue_size=10)
+    local_raw_pub = rospy.Publisher("mavros/setpoint_raw/local", PositionTarget, queue_size=10)
 
     rospy.wait_for_service("/mavros/cmd/arming")
     arming_client = rospy.ServiceProxy("mavros/cmd/arming", CommandBool)
@@ -31,18 +30,22 @@ if __name__ == "__main__":
     while not rospy.is_shutdown() and not current_state.connected:
         rate.sleep()
 
-    vel_cmd = TwistStamped()
+    vel_cmd = PositionTarget()
+    vel_cmd.coordinate_frame = PositionTarget.FRAME_LOCAL_NED
+    vel_cmd.type_mask = PositionTarget.IGNORE_PX + PositionTarget.IGNORE_PY + PositionTarget.IGNORE_PZ + \
+                        PositionTarget.IGNORE_AFX + PositionTarget.IGNORE_AFY + PositionTarget.IGNORE_AFZ + \
+                        PositionTarget.IGNORE_YAW + PositionTarget.IGNORE_YAW_RATE
 
-    vel_cmd.twist.linear.x = 1.0  # Set linear velocity in x direction
-    vel_cmd.twist.linear.y = 1.0  # Set linear velocity in y direction
-    vel_cmd.twist.linear.z = 0.0  # Set linear velocity in z direction
+    vel_cmd.velocity.x = 0.0
+    vel_cmd.velocity.y = 0.0
+    vel_cmd.velocity.z = 1.0
 
     # Send a few setpoints before starting
     for i in range(100):
         if rospy.is_shutdown():
             break
 
-        local_vel_pub.publish(vel_cmd)
+        local_raw_pub.publish(vel_cmd)
         rate.sleep()
 
     offb_set_mode = SetModeRequest()
@@ -56,7 +59,7 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         if current_state.mode != "OFFBOARD" and (rospy.Time.now() - last_req) > rospy.Duration(5.0):
             if set_mode_client.call(offb_set_mode).mode_sent:
-                rospy.loginfo("OFFBOARD enabled")
+                rospy.loginfo("OFFBOARD enabled ane")
 
             last_req = rospy.Time.now()
         else:
@@ -66,6 +69,7 @@ if __name__ == "__main__":
 
                 last_req = rospy.Time.now()
 
-        local_vel_pub.publish(vel_cmd)
+        # Publish velocity setpoint
+        local_raw_pub.publish(vel_cmd)
 
         rate.sleep()
